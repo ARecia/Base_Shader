@@ -23,7 +23,7 @@ void RenderScene(void)
 	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
 
 	// size를 0에서 1로 변경, 색상을 r=1, g=0, b=0, a=1 로 세팅
-	g_Renderer->DrawTriangle(0, 0, 0, 1, 1, 0, 0, 1);
+	g_Renderer->DrawTriangle(0, 0, 0, 1, 1, 1, 1, 1);
 
 	glutSwapBuffers();
 }
