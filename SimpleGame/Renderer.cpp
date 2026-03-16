@@ -19,11 +19,14 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 
 	//Load shaders
 	m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs", "./Shaders/SolidRect.fs");
-	
+	// 추가된 부분: 삼각형 셰이더 로드
+	m_TriangleShader = CompileShaders("./Shaders/Triangle.vs", "./Shaders/Triangle.fs");
+
 	//Create VBOs
 	CreateVertexBufferObjects();
 
-	if (m_SolidRectShader > 0 && m_VBORect > 0)
+	// 수정된 부분: m_TriangleShader 도 초기화 검사에 포함
+	if (m_SolidRectShader > 0 && m_TriangleShader > 0 && m_VBORect > 0)
 	{
 		m_Initialized = true;
 	}
@@ -41,11 +44,27 @@ void Renderer::CreateVertexBufferObjects()
 	{
 		-1.f / m_WindowSizeX, -1.f / m_WindowSizeY, 0.f, -1.f / m_WindowSizeX, 1.f / m_WindowSizeY, 0.f, 1.f / m_WindowSizeX, 1.f / m_WindowSizeY, 0.f, //Triangle1
 		-1.f / m_WindowSizeX, -1.f / m_WindowSizeY, 0.f,  1.f / m_WindowSizeX, 1.f / m_WindowSizeY, 0.f, 1.f / m_WindowSizeX, -1.f / m_WindowSizeY, 0.f, //Triangle2
+
 	};
 
 	glGenBuffers(1, &m_VBORect);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBORect);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(rect), rect, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rect), rect, GL_STATIC_DRAW);  
+
+	
+
+	float trianlge[]
+		=
+	{
+		0.0f, 0.0f, 0.0f, // 1. 좌측 하단 (길이 1의 끝점)
+		1.0f, 0.0f, 0.0f, // 2. 우측 하단 (직각 부분)
+		1.0f, 1.0f, 0.0f  // 3. 우측 상단 (길이 1의 끝점)
+
+	};
+	glGenBuffers(1, &m_VBOTriangle);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTriangle);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(trianlge), trianlge, GL_STATIC_DRAW);
+
 }
 
 void Renderer::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -186,4 +205,28 @@ void Renderer::GetGLPosition(float x, float y, float *newX, float *newY)
 {
 	*newX = x * 2.f / m_WindowSizeX;
 	*newY = y * 2.f / m_WindowSizeY;
+}
+
+void Renderer::DrawTriangle(float x, float y, float z, float size, float r, float g, float b, float a)
+{
+	float newX, newY;
+	GetGLPosition(x, y, &newX, &newY);
+
+	// Program select - 삼각형 셰이더로 변경
+	glUseProgram(m_TriangleShader);
+
+	// Uniform 변수 전달 (위치, 크기, 색상)
+	glUniform4f(glGetUniformLocation(m_TriangleShader, "u_Trans"), newX, newY, 0, size);
+	glUniform4f(glGetUniformLocation(m_TriangleShader, "u_Color"), r, g, b, a);
+
+	int attribPosition = glGetAttribLocation(m_TriangleShader, "a_Position");
+	glEnableVertexAttribArray(attribPosition);
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBOTriangle);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3); // 3개의 정점 렌더링
+
+	glDisableVertexAttribArray(attribPosition);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

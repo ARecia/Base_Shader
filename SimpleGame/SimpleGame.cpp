@@ -22,8 +22,8 @@ void RenderScene(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
 
-	// Renderer Test
-	g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
+	// size를 0에서 1로 변경, 색상을 r=1, g=0, b=0, a=1 로 세팅
+	g_Renderer->DrawTriangle(0, 0, 0, 1, 1, 0, 0, 1);
 
 	glutSwapBuffers();
 }
